@@ -1,0 +1,855 @@
+<!-- ZLSR(zl499463846) 2026 公益开源项目，随意商用，也可以说时自己做的，毕竟这个项目挺实用的，欢迎传播！(有BUG不要来骂我，这个程序是我闲着没事做瞎写的，见谅) -->
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频 转 MIDI / Audio to MIDI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0b0f1a; color: #e0e0e0; font-family: 'Segoe UI', system-ui; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: #ffb347; font-size: 2.5rem; margin-bottom: 5px; }
+        .subtitle { color: #a0c0ff; margin-bottom: 30px; padding-left: 20px; border-left: 4px solid #ffb347; }
+        .upload-area { background: #1e2437; border: 3px dashed #4f6f8f; border-radius: 30px; padding: 40px; text-align: center; cursor: pointer; transition: 0.2s; margin-bottom: 20px; }
+        .upload-area:hover { border-color: #ffb347; background: #252e45; }
+        #fileName { margin-top: 15px; color: #ffb347; font-weight: bold; }
+        .flex-row { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+        .control-item { flex: 1 1 200px; }
+        .control-item label { display: block; color: #ffb347; font-weight: bold; margin-bottom: 5px; }
+        .control-item input[type=range] { width: 100%; }
+        .value-display { background: #0f1422; padding: 5px 10px; border-radius: 8px; text-align: center; margin-top: 5px; }
+        .checkbox-item { display: flex; align-items: center; gap: 10px; margin: 15px 0; }
+        .checkbox-item input { width: 20px; height: 20px; cursor: pointer; }
+        button { padding: 20px 45%; font-size: 1.1rem; border: none; border-radius: 40px; cursor: pointer; font-weight: bold; background: #4a9eff; color: white; margin: 5px; transition: 0.1s; }
+        button.success { background: #5fb85f; }
+        button:active { transform: translateY(2px); opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .progress-bar { background: #1e2437; height: 20px; border-radius: 10px; margin: 20px 0; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #4a9eff, #ffb347); transition: width 0.2s; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+        .stat-card { background: #1e2437; border-radius: 12px; padding: 15px; text-align: center; }
+        .stat-number { font-size: 2rem; font-weight: bold; color: #ffb347; }
+        .warning { background: #332211; color: #ffcc99; padding: 15px; border-radius: 15px; margin: 20px 0; }
+        .note-list { max-height: 200px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 5px; background: #1e2437; border-radius: 10px; padding: 10px; margin-top: 10px; }
+        .note-tag { background: #0f1422; padding: 5px 10px; border-radius: 15px; font-size: 0.9rem; border-left: 3px solid #ffb347; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>音频 转 MIDI</h1>
+    <div class="subtitle">ZLSR(zl499463846) 2026 公益开源项目，随意商用，也可以说时自己做的，毕竟这个项目挺实用的，欢迎传播！</div>
+	
+    <!-- 上传区域 -->
+    <div class="upload-area" id="dropZone">
+        <div style="font-size: 48px;">📂</div>
+        <h3>点击或拖放音频文件</h3>
+        <input type="file" id="fileInput" accept="audio/*" style="display: none;">
+        <div id="fileName"></div>
+    </div>
+
+    <!-- 参数控制 -->
+    <div class="panel">
+        <div class="flex-row">
+            <div class="control-item">
+                <label>最低MIDI音符</label>
+                <input type="range" id="minNote" min="0" max="126" value="0" step="1">
+                <div class="value-display" id="minNoteVal">0</div>
+            </div>
+            <div class="control-item">
+                <label>最高MIDI音符</label>
+                <input type="range" id="maxNote" min="1" max="127" value="127" step="1">
+                <div class="value-display" id="maxNoteVal">127</div>
+            </div>
+			<div class="control-item">
+				<label>FFT重叠因子</label>
+				<select id="fftOverlap" style="width:100%; padding:20px; background:#0f1422; color:white; border:1px solid #4a5a7a; border-radius:8px; font-size:16px;">
+					<option value="2">2x (快速)</option>
+					<option value="4" selected>4x (推荐)</option>
+					<option value="8">8x (平滑)</option>
+					<option value="16">16x (极高时间分辨率)</option>
+				</select>
+			</div>
+            <div class="control-item">
+                <label>响度阈值</label>
+                <input type="range" id="threshold" min="0.001" max="0.1" step="0.001" value="0.005">
+                <div class="value-display" id="thresholdVal">0.005</div>
+            </div>
+			<div class="control-item">
+				<label>响度缩放 (0.5-2.0)</label>
+				<input type="range" id="loudnessScale" min="0.5" max="2.0" step="0.1" value="1.0">
+				<div class="value-display" id="loudnessScaleVal">1.0</div>
+			</div>
+            <div class="control-item">
+                <label>FFT大小</label>
+                <select id="fftSize" style="width:100%; padding:20px; background:#0f1422; color:white; border:1px solid #4a5a7a; border-radius:8px; font-size:16px;">
+					<option value="512">512 (频率精度最低,时间精度最高,体积最大)</option>
+					<option value="1024">1024 (频率精度较低,时间精度较高,体积较大)</option>
+                    <option value="2048">2048 (时间精度 > 频率精度,体积大一点)</option>
+                    <option value="4096" selected>4096 (全面平衡,体积适中)</option>
+                    <option value="8192">8192 (频率精度 > 时间精度,体积小一点)</option>
+					<option value="16384">16384 (频率精度较高,时间精度较低,体积较小)</option>
+					<option value="32768">32768 (频率精度最高,时间精度最低,体积最小)</option>
+                </select>
+            </div>
+        </div>
+        <div class="checkbox-item">
+            <input type="checkbox" id="removeEmpty">
+            <label for="removeEmpty">[可勾选]自动去除空白帧 (不推荐,容易误伤正常音符)</label>
+        </div>
+		<p style="color: #a0c0ff; font-size: 0.9rem;">1. FFT重叠因子：越大音质越高，处理时间会更长</p>
+        <p style="color: #a0c0ff; font-size: 0.9rem;">2. 响度阈值：阈值越小，生成的MIDI体积越大，音质越高</p>
+		<p style="color: #a0c0ff; font-size: 0.9rem;">3. 响度缩放：影响不大，默认就好</p>
+		<p style="color: #a0c0ff; font-size: 0.9rem;">4. FFT大小：FFT越小，生成的MIDI体积越大，为4096时音质最高</p>
+		<p style="color: #a0c0ff; font-size: 0.9rem;">5. 自动去除空白帧开启后，没有任何音符的帧将被删除，剩余帧的时间轴重新计算，总时长等于原音频，消除静音停顿</p>
+		<p style="color: #ee8855; font-size: 0.9rem;">6. 请不要在处理时多次点击转换按钮，否则可能闪退</p>
+		<p style="color: #ee8855; font-size: 0.9rem;">7. 若页面卡顿或无响应，请先不要关闭，耐心等待，FFT算法很吃CPU，慢工出细活嘛</p>
+    </div>
+
+    <!-- 模式选择和分析进度 -->
+    <div class="panel">
+        <div class="flex-row" style="justify-content: center;">
+            <button id="dynamicBtn" class="success" disabled style="width:100%; margin:20px 0;">开始转换</button>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div id="progressText" style="text-align:center; margin-top:10px;">等待上传文件...</div>
+    </div>
+
+    <!-- 统计信息 -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number" id="statFrames">0</div>
+            <div class="stat-label">原始帧数</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="statBins">0</div>
+            <div class="stat-label">频率通道</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="statAvgNotes">0</div>
+            <div class="stat-label">平均音符/帧</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="statTotalNotes">0</div>
+            <div class="stat-label">总音符数</div>
+        </div>
+    </div>
+	<div class="control-item">
+		<label style="font-size:30px; text-align: center;">MIDI处理模式（调整此项不需要重新转换）</label>
+		<select id="midiMode" style="width:100%; padding:20px; background:#0f1422; color:white; border:1px solid #4a5a7a; border-radius:8px; font-size:16px; text-align: center;">
+			<option value="normal" selected>高音质算法（对播放器要求极高，文件大，播放器得当的话音质最高）</option>
+			<option value="overlap">平衡修复算法（牺牲小部分音质，文件大，兼容性一般，音质略差于高音质算法）</option>
+			<option value="traditional">传统处理(普通的Audio to Midi网站的转换策略，文件小，通用性高)</option>
+		</select>
+	</div>
+    <!-- 下载按钮 -->
+    <button id="downloadBtn" disabled style="width:100%; margin:20px 0;">保存(.mid)</button>
+
+    <!-- 预览 -->
+    <div class="panel">
+        <h4 style="color:#ffb347;">提取的音符预览</h4>
+        <div class="note-list" id="noteList">暂无音符</div>
+    </div>
+
+    <div class="warning" id="info">请上传音频文件!</div>
+</div>
+<p style="color: #aaaaee;text-align: center;"> 有BUG不要来骂我，这个程序是我闲着没事做瞎写的，见谅...</p>
+<script>
+(function() {
+    // DOM 元素
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileNameDiv = document.getElementById('fileName');
+    const dynamicBtn = document.getElementById('dynamicBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const infoDiv = document.getElementById('info');
+    const noteListDiv = document.getElementById('noteList');
+    const removeEmptyCheckbox = document.getElementById('removeEmpty');
+
+    const minNoteSlider = document.getElementById('minNote');
+    const maxNoteSlider = document.getElementById('maxNote');
+    const minNoteVal = document.getElementById('minNoteVal');
+    const maxNoteVal = document.getElementById('maxNoteVal');
+    const thresholdSlider = document.getElementById('threshold');
+    const thresholdVal = document.getElementById('thresholdVal');
+    const fftSizeSelect = document.getElementById('fftSize');
+
+    const statFrames = document.getElementById('statFrames');
+    const statBins = document.getElementById('statBins');
+    const statAvgNotes = document.getElementById('statAvgNotes');
+    const statTotalNotes = document.getElementById('statTotalNotes');
+
+	const loudnessScale = document.getElementById('loudnessScale');
+	const loudnessScaleVal = document.getElementById('loudnessScaleVal');
+	const fftOverlap = document.getElementById('fftOverlap');
+	const midiModeSelect = document.getElementById('midiMode');
+	
+	// 更新显示
+	loudnessScale.addEventListener('input', () => {
+		loudnessScaleVal.innerText = parseFloat(loudnessScale.value).toFixed(1);
+	});
+	// 初始化显示
+	loudnessScaleVal.innerText = loudnessScale.value;
+	dynamicBtn.innerText = '等待上传';
+	dynamicBtn.disabled = true;
+	
+    // 更新滑条显示
+    function updateRange() {
+        minNoteVal.innerText = minNoteSlider.value;
+        maxNoteVal.innerText = maxNoteSlider.value;
+        thresholdVal.innerText = parseFloat(thresholdSlider.value).toFixed(3);
+    }
+    minNoteSlider.addEventListener('input', updateRange);
+    maxNoteSlider.addEventListener('input', updateRange);
+    thresholdSlider.addEventListener('input', updateRange);
+    updateRange();
+
+    // 音频上下文和数据
+    let audioContext = null;
+    let audioBuffer = null;
+    let audioFileName = 'audio';
+    let currentNotes = [];
+
+    // 文件上传
+    function handleFiles(files) {
+        if (!files || !files[0]) return;
+        const file = files[0];
+        audioFileName = file.name.replace(/\.[^/.]+$/, '');
+        fileNameDiv.innerText = `已选择: ${file.name}`;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            audioContext.decodeAudioData(e.target.result, (buffer) => {
+                audioBuffer = buffer;
+				setProgress(5, '载入文件成功!');
+				dynamicBtn.disabled = false; // 恢复按钮
+				dynamicBtn.innerText = '开始转换';
+				downloadBtn.disabled = true; // 禁用下载按钮(防啥掉乱点)
+                infoDiv.innerHTML = '✔ 音频加载成功';
+            }, (err) => {
+                infoDiv.innerHTML = '❌ 解码失败: ' + err;
+				dynamicBtn.innerText = '文件解码失败';
+				setProgress(0, '什么鬼?');
+            });
+        };
+        reader.readAsArrayBuffer(file);
+    }
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+    dropZone.addEventListener('dragover', (e) => e.preventDefault());
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        handleFiles(e.dataTransfer.files);
+    });
+
+    // 进度条
+    function setProgress(percent, text) {
+        progressFill.style.width = percent + '%';
+        progressText.innerText = text;
+    }
+
+    // MIDI生成函数(不敢改，改了必出BUG)
+    function writeVLQ(value) {
+        let buffer = [];
+        let v = value;
+        buffer.unshift(v & 0x7F);
+        v >>= 7;
+        while (v > 0) {
+            buffer.unshift((v & 0x7F) | 0x80);
+            v >>= 7;
+        }
+        return buffer;
+    }
+	
+	// 重叠MIDI生成函数
+    function overlapCreateMidiBlob(notes, duration) {
+        if (!notes || notes.length === 0) {
+            notes = [{ midi: 60, start: 0, end: 1, velocity: 100 }];
+        }
+
+        const ticksPerQuarter = 480;
+        const tempo = 500000; // 120 BPM
+        const ticksPerSecond = ticksPerQuarter * 2; // 960
+
+        // 轨道0：tempo + meta
+        let track0 = [];
+        track0.push(0x00, 0xFF, 0x51, 0x03,
+            (tempo >> 16) & 0xFF,
+            (tempo >> 8) & 0xFF,
+            tempo & 0xFF);
+        track0.push(0x00, 0xFF, 0x03, 5, 65, 117, 100, 105, 111); // "Audio"
+        track0.push(0x00, 0xFF, 0x2F, 0x00);
+
+        // 轨道1：偶数索引帧的音符（正常时间）
+        let track1_even = [];
+        // 轨道2：奇数索引帧的音符（延迟半帧）
+        let track1_odd = [];
+
+        // 按开始时间排序
+        const sortedNotes = [...notes].sort((a, b) => a.start - b.start);
+        
+        // 按开始时间分组（同一时间开始的音符）
+        const groups = [];
+        let currentGroup = [];
+        let currentStart = sortedNotes[0]?.start;
+        
+        for (const note of sortedNotes) {
+            if (Math.abs(note.start - currentStart) < 0.0001) {
+                currentGroup.push(note);
+            } else {
+                groups.push(currentGroup);
+                currentGroup = [note];
+                currentStart = note.start;
+            }
+        }
+        if (currentGroup.length > 0) groups.push(currentGroup);
+
+        // 两个轨道的独立时间线
+        let lastTick_even = 0;
+        let lastTick_odd = 0;
+
+        for (let idx = 0; idx < groups.length; idx++) {
+            const group = groups[idx];
+            
+            // 计算该组音符的原始开始时间
+            const originalStart = group[0].start;
+            const startTick = Math.floor(originalStart * ticksPerSecond);
+            
+            // 根据索引奇偶选择轨道
+            const isEven = idx % 2 === 0;
+            
+            // 计算该组音符的原始结束时间（取最晚的）
+            const maxEnd = Math.max(...group.map(n => n.end));
+            const endTick = Math.floor(maxEnd * ticksPerSecond);
+            const originalDur = endTick - startTick;
+            
+            // 所有音符延长一倍
+            const durTicks = originalDur * 2; // 2倍长度
+            
+            if (isEven) {
+                // 偶数轨道：正常时间
+                const delta = startTick - lastTick_even;
+                track1_even.push(...writeVLQ(delta >= 0 ? delta : 0));
+                
+                // Note On
+                for (let i = 0; i < group.length; i++) {
+                    if (i > 0) track1_even.push(0x00);
+                    track1_even.push(0x90, group[i].midi, group[i].velocity);
+                }
+                
+                if (durTicks > 0) {
+                    track1_even.push(...writeVLQ(durTicks));
+                    for (let i = 0; i < group.length; i++) {
+                        if (i > 0) track1_even.push(0x00);
+                        track1_even.push(0x80, group[i].midi, 64);
+                    }
+                    lastTick_even = startTick + durTicks;
+                }
+            } else {
+                // 奇数轨道：需要计算当前帧的实际长度，然后延迟半帧
+                
+                // 计算当前帧的长度（到下一帧开始的时间）
+                let frameLength = 480; // 默认值
+                if (idx < groups.length - 1) {
+                    const nextStart = groups[idx + 1][0].start;
+                    frameLength = Math.floor((nextStart - originalStart) * ticksPerSecond);
+                } else {
+                    // 最后一帧，用音符长度作为参考
+                    frameLength = originalDur;
+                }
+                frameLength = Math.max(1, frameLength);
+                
+                // 半帧延迟
+                const halfFrameTicks = Math.floor(frameLength / 2);
+                const delayedStartTick = startTick + halfFrameTicks;
+                
+                const delta = delayedStartTick - lastTick_odd;
+                track1_odd.push(...writeVLQ(delta >= 0 ? delta : 0));
+                
+                // Note On
+                for (let i = 0; i < group.length; i++) {
+                    if (i > 0) track1_odd.push(0x00);
+                    track1_odd.push(0x90, group[i].midi, group[i].velocity);
+                }
+                
+                // 奇数轨道的音符同样延长一倍
+                if (durTicks > 0) {
+                    track1_odd.push(...writeVLQ(durTicks));
+                    for (let i = 0; i < group.length; i++) {
+                        if (i > 0) track1_odd.push(0x00);
+                        track1_odd.push(0x80, group[i].midi, 64);
+                    }
+                    lastTick_odd = delayedStartTick + durTicks;
+                }
+            }
+        }
+
+        // 轨道结束
+        track1_even.push(0x00, 0xFF, 0x2F, 0x00);
+        track1_odd.push(0x00, 0xFF, 0x2F, 0x00);
+
+        function makeTrackChunk(data) {
+            const len = data.length;
+            return [
+                0x4D, 0x54, 0x72, 0x6B,
+                (len >> 24) & 0xFF,
+                (len >> 16) & 0xFF,
+                (len >> 8) & 0xFF,
+                len & 0xFF,
+                ...data
+            ];
+        }
+
+        const track0Chunk = makeTrackChunk(track0);
+        const track1_even_chunk = makeTrackChunk(track1_even);
+        const track1_odd_chunk = makeTrackChunk(track1_odd);
+
+        // 头部：3个轨道
+        const header = [
+            0x4D, 0x54, 0x68, 0x64,
+            0x00, 0x00, 0x00, 0x06,
+            0x00, 0x01,             // 格式1
+            0x00, 0x03,             // 3个轨道
+            (ticksPerQuarter >> 8) & 0xFF,
+            ticksPerQuarter & 0xFF
+        ];
+
+        const midiBytes = [...header, ...track0Chunk, ...track1_even_chunk, ...track1_odd_chunk];
+        return new Blob([new Uint8Array(midiBytes)], { type: 'audio/midi' });
+    }
+	
+	// 速切MIDI生成函数
+    function speedcreateMidiBlob(notes, duration) {
+        if (!notes || notes.length === 0) {
+            notes = [{ midi: 60, start: 0, end: 1, velocity: 100 }];
+        }
+
+        const ticksPerQuarter = 480;
+        const tempo = 500000; // 120 BPM
+        const ticksPerSecond = ticksPerQuarter * 2; // 960
+
+        // 轨道0：tempo + meta
+        let track0 = [];
+        track0.push(0x00, 0xFF, 0x51, 0x03,
+            (tempo >> 16) & 0xFF,
+            (tempo >> 8) & 0xFF,
+            tempo & 0xFF);
+        track0.push(0x00, 0xFF, 0x03, 5, 65, 117, 100, 105, 111); // "Audio"
+        track0.push(0x00, 0xFF, 0x2F, 0x00);
+
+        // 轨道1：音符
+        let track1 = [];
+        let lastTick = 0;
+
+        // 按开始时间分组
+        const groups = new Map();
+        notes.forEach(n => {
+            const key = n.start.toFixed(6);
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key).push(n);
+        });
+
+        // 按时间排序
+        const sortedGroups = Array.from(groups.entries()).sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]));
+
+        for (const [timeStr, group] of sortedGroups) {
+            const startTick = Math.floor(parseFloat(timeStr) * ticksPerSecond);
+            track1.push(...writeVLQ(startTick - lastTick));
+            lastTick = startTick;
+
+            // 连续Note On (delta 0)
+            for (let i = 0; i < group.length; i++) {
+                if (i > 0) track1.push(0x00);
+                track1.push(0x90, group[i].midi, group[i].velocity);
+            }
+
+            const maxEnd = Math.max(...group.map(n => n.end));
+            const endTick = Math.floor(maxEnd * ticksPerSecond);
+            const durTicks = endTick - startTick;
+            if (durTicks > 0) {
+                track1.push(...writeVLQ(durTicks));
+                for (let i = 0; i < group.length; i++) {
+                    if (i > 0) track1.push(0x00);
+                    track1.push(0x80, group[i].midi, 64);
+                }
+                lastTick = endTick;
+            }
+        }
+
+        track1.push(0x00, 0xFF, 0x2F, 0x00);
+
+        function makeTrackChunk(data) {
+            const len = data.length;
+            return [
+                0x4D, 0x54, 0x72, 0x6B,
+                (len >> 24) & 0xFF,
+                (len >> 16) & 0xFF,
+                (len >> 8) & 0xFF,
+                len & 0xFF,
+                ...data
+            ];
+        }
+
+        const track0Chunk = makeTrackChunk(track0);
+        const track1Chunk = makeTrackChunk(track1);
+
+        const header = [
+            0x4D, 0x54, 0x68, 0x64,
+            0x00, 0x00, 0x00, 0x06,
+            0x00, 0x01,             // 格式1
+            0x00, 0x02,             // 2个轨道
+            (ticksPerQuarter >> 8) & 0xFF,
+            ticksPerQuarter & 0xFF
+        ];
+
+        const midiBytes = [...header, ...track0Chunk, ...track1Chunk];
+        return new Blob([new Uint8Array(midiBytes)], { type: 'audio/midi' });
+    }
+	
+	// 忽略包络音量MIDI生成函数
+    function traditionalCreateMidiBlob(notes, duration) {
+        if (!notes || notes.length === 0) {
+            notes = [{ midi: 60, start: 0, end: 1, velocity: 100 }];
+        }
+
+        // 第一步：按音高合并相邻帧，并计算平均力度
+        const pitchGroups = new Map();
+        notes.forEach(n => {
+            if (!pitchGroups.has(n.midi)) pitchGroups.set(n.midi, []);
+            pitchGroups.get(n.midi).push({ 
+                start: n.start, 
+                end: n.end, 
+                velocity: n.velocity || 100 
+            });
+        });
+
+        const mergedNotes = [];
+        const GAP_TOLERANCE = 0.01; // 允许 0.01 秒的间隔（可调整）
+
+        for (const [midi, events] of pitchGroups.entries()) {
+            events.sort((a, b) => a.start - b.start);
+            let i = 0;
+            while (i < events.length) {
+                let j = i;
+                // 合并条件：后一个的开始 减去 前一个的结束 小于容忍值
+                while (j + 1 < events.length &&
+                       events[j + 1].start - events[j].end <= GAP_TOLERANCE) {
+                    j++;
+                }
+                // 计算这一组帧的平均力度
+                let sumVel = 0;
+                for (let k = i; k <= j; k++) {
+                    sumVel += events[k].velocity;
+                }
+                const avgVel = Math.round(sumVel / (j - i + 1));
+                const velocity = Math.min(127, Math.max(1, avgVel)); // 限制有效范围
+
+                mergedNotes.push({
+                    midi: midi,
+                    start: events[i].start,
+                    end: events[j].end,
+                    velocity: velocity
+                });
+                i = j + 1;
+            }
+        }
+
+        if (mergedNotes.length === 0) {
+            mergedNotes.push({ midi: 60, start: 0, end: 1, velocity: 100 });
+        }
+
+        // 第二步：生成事件列表
+        const events = [];
+        mergedNotes.forEach(n => {
+            events.push({ time: n.start, type: 'on', midi: n.midi, vel: n.velocity });
+            events.push({ time: n.end, type: 'off', midi: n.midi, vel: 64 }); // Note Off 力度固定为 64
+        });
+        events.sort((a, b) => a.time - b.time);
+
+        // MIDI 参数
+        const ticksPerQuarter = 480;
+        const tempo = 500000; // 120 BPM
+        const ticksPerSecond = ticksPerQuarter * 2; // 960
+
+        function writeVLQ(value) {
+            let buffer = [];
+            let v = value;
+            buffer.unshift(v & 0x7F);
+            v >>= 7;
+            while (v > 0) {
+                buffer.unshift((v & 0x7F) | 0x80);
+                v >>= 7;
+            }
+            return buffer;
+        }
+
+        // 轨道0：速度与元数据
+        let track0 = [];
+        track0.push(0x00, 0xFF, 0x51, 0x03,
+            (tempo >> 16) & 0xFF,
+            (tempo >> 8) & 0xFF,
+            tempo & 0xFF);
+        track0.push(0x00, 0xFF, 0x03, 8, 78, 111, 118, 111, 108, 117, 109, 101); // "traditional"
+        track0.push(0x00, 0xFF, 0x2F, 0x00);
+
+        // 轨道1：音符事件
+        let track1 = [];
+        let lastTick = 0;
+        for (const ev of events) {
+            const tick = Math.floor(ev.time * ticksPerSecond);
+            const delta = tick - lastTick;
+            if (delta < 0) continue; // 安全防护
+            track1.push(...writeVLQ(delta));
+            track1.push(ev.type === 'on' ? 0x90 : 0x80, ev.midi, ev.vel);
+            lastTick = tick;
+        }
+        track1.push(0x00, 0xFF, 0x2F, 0x00);
+
+        function makeTrackChunk(data) {
+            const len = data.length;
+            return [
+                0x4D, 0x54, 0x72, 0x6B,
+                (len >> 24) & 0xFF,
+                (len >> 16) & 0xFF,
+                (len >> 8) & 0xFF,
+                len & 0xFF,
+                ...data
+            ];
+        }
+
+        const track0Chunk = makeTrackChunk(track0);
+        const track1Chunk = makeTrackChunk(track1);
+
+        const header = [
+            0x4D, 0x54, 0x68, 0x64,
+            0x00, 0x00, 0x00, 0x06,
+            0x00, 0x01,
+            0x00, 0x02,
+            (ticksPerQuarter >> 8) & 0xFF,
+            ticksPerQuarter & 0xFF
+        ];
+
+        const midiBytes = [...header, ...track0Chunk, ...track1Chunk];
+        return new Blob([new Uint8Array(midiBytes)], { type: 'audio/midi' });
+    }
+
+    //FFT处理逻辑(改不了一点)
+    function fft(re, im) {
+		dynamicBtn.disabled = true; // 暂时禁用转换按钮
+		dynamicBtn.innerText = '转换中...';
+        const n = re.length;
+        if (n <= 1) return;
+        let bits = Math.log2(n);
+        for (let i = 0; i < n; i++) {
+            let rev = 0;
+            for (let j = 0; j < bits; j++) {
+                if ((i >> j) & 1) rev |= 1 << (bits - 1 - j);
+            }
+            if (rev > i) {
+                [re[i], re[rev]] = [re[rev], re[i]];
+                [im[i], im[rev]] = [im[rev], im[i]];
+            }
+        }
+        for (let len = 2; len <= n; len <<= 1) {
+            const half = len / 2;
+            const angleStep = -2 * Math.PI / len;
+            for (let i = 0; i < n; i += len) {
+                for (let j = 0; j < half; j++) {
+                    const angle = angleStep * j;
+                    const wRe = Math.cos(angle);
+                    const wIm = Math.sin(angle);
+                    const uRe = re[i + j];
+                    const uIm = im[i + j];
+                    const vRe = re[i + j + half] * wRe - im[i + j + half] * wIm;
+                    const vIm = re[i + j + half] * wIm + im[i + j + half] * wRe;
+                    re[i + j] = uRe + vRe;
+                    im[i + j] = uIm + vIm;
+                    re[i + j + half] = uRe - vRe;
+                    im[i + j + half] = uIm - vIm;
+                }
+            }
+        }
+    }
+
+    //转换逻辑
+    function analyzeDynamic() {
+		dynamicBtn.disabled = true;
+		dynamicBtn.innerText = '转换中...';
+		setProgress(30, '计算FFT...');
+        if (!audioBuffer) { infoDiv.innerHTML = '请先上传音频'; return; }
+		setTimeout(() => {
+			if (!audioBuffer) {
+				infoDiv.innerHTML = '请先上传音频';
+				dynamicBtn.disabled = false;
+				dynamicBtn.innerText = '开始转换';
+				return;
+			}
+        const buffer = audioBuffer;
+        const sampleRate = buffer.sampleRate;
+        const channelData = buffer.getChannelData(0);
+        const duration = buffer.duration;
+        const minMidi = parseInt(minNoteSlider.value);
+        const maxMidi = parseInt(maxNoteSlider.value);
+        const threshold = parseFloat(thresholdSlider.value);
+        const fftSize = parseInt(fftSizeSelect.value);
+        const overlapFactor = parseInt(fftOverlap.value);
+		const hopSize = Math.floor(fftSize / overlapFactor);// 重叠率可控
+        const removeEmpty = removeEmptyCheckbox.checked;
+
+        const numFrames = Math.floor((channelData.length - fftSize) / hopSize) + 1;
+        const numBins = fftSize / 2 + 1;
+
+        statFrames.innerText = numFrames;
+        statBins.innerText = numBins;
+
+        const window = new Float64Array(fftSize);
+        for (let i = 0; i < fftSize; i++) {
+            window[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (fftSize - 1));
+        }
+
+        // 先收集每帧的音符（原始时间）
+        const rawFrames = [];
+
+        for (let frame = 0; frame < numFrames; frame++) {
+            const startSample = frame * hopSize;
+            const re = new Float64Array(fftSize);
+            const im = new Float64Array(fftSize);
+            for (let i = 0; i < fftSize; i++) {
+                if (startSample + i < channelData.length) re[i] = channelData[startSample + i] * window[i];
+            }
+            fft(re, im);
+
+            const mags = [];
+            let maxMag = 0;
+            for (let i = 0; i < numBins; i++) {
+                const mag = Math.sqrt(re[i]*re[i] + im[i]*im[i]) / fftSize;
+                mags.push(mag);
+                if (mag > maxMag) maxMag = mag;
+            }
+
+            const frameNotes = [];
+
+            // 检测峰值（超过阈值且为局部最大）
+            for (let i = 1; i < numBins - 1; i++) {
+                if (mags[i] > threshold && mags[i] > mags[i-1] && mags[i] > mags[i+1]) {
+                    const freq = i * sampleRate / fftSize;
+                    if (freq < 20 || freq > 20000) continue;
+                    let midi = Math.round(12 * Math.log2(freq / 440) + 69);
+                    if (midi < minMidi || midi > maxMidi) continue;
+                    const scale = parseFloat(loudnessScale.value);
+					let rawVel = Math.floor((mags[i] / maxMag) * 100 * scale + 20);
+					const vel = Math.min(127, Math.max(20, rawVel));
+                    frameNotes.push({ midi, vel }); // 暂时不存时间，后面重新计算
+                }
+            }
+
+            rawFrames.push(frameNotes);
+
+            if (frame % 20 === 0) {
+                setProgress(10 + Math.floor((frame / numFrames) * 70), `分析帧 ${frame}/${numFrames} (${frameNotes.length} 音)`);
+            }
+        }
+
+        //去除空白帧并重新计算时间轴
+        let filteredFrames = rawFrames;
+        let removedCount = 0;
+        if (removeEmpty) {
+            filteredFrames = rawFrames.filter(frame => frame.length > 0);
+            removedCount = rawFrames.length - filteredFrames.length;
+        }
+
+        // 重新计算每帧的时间
+        const frameDuration = hopSize / sampleRate; // 每帧的时长（原始hop时长）
+        const totalDuration = duration; // 目标总时长
+        const newFrameCount = filteredFrames.length;
+
+        // 如果过滤后没有帧，则返回空
+        if (newFrameCount === 0) {
+			dynamicBtn.disabled = false; // 恢复按钮
+			dynamicBtn.innerText = '开始转换';
+            currentNotes = [];
+            statAvgNotes.innerText = '0';
+            statTotalNotes.innerText = '0';
+            updateNotePreview([]);
+            setProgress(100, '完成（无音符）');
+            downloadBtn.disabled = true;
+            infoDiv.innerHTML = '⚠️ 所有帧均为空白，请降低阈值。';
+            return;
+        }
+
+        // 新时间轴：将剩余帧均匀压缩到总时长内，每帧时长为 totalDuration / newFrameCount
+        const newFrameLength = totalDuration / newFrameCount;
+
+        const allNotes = [];
+        for (let i = 0; i < filteredFrames.length; i++) {
+            const start = i * newFrameLength;
+            const end = (i + 1) * newFrameLength;
+            const notes = filteredFrames[i];
+            notes.forEach(n => {
+                allNotes.push({
+                    midi: n.midi,
+                    start: start,
+                    end: end,
+                    velocity: n.vel
+                });
+            });
+        }
+
+        currentNotes = allNotes;
+        const avg = (allNotes.length / newFrameCount).toFixed(1);
+        statAvgNotes.innerText = avg;
+        statTotalNotes.innerText = allNotes.length;
+        statFrames.innerText = `${numFrames}`; // 显示原始帧数和去除数
+        updateNotePreview(allNotes);
+        setProgress(100, '完成！');
+        downloadBtn.disabled = false;
+        infoDiv.innerHTML = `✅ 转换完成，共 ${allNotes.length} 个音符，平均每帧 ${avg} 个，已去除 ${removedCount} 空白帧。`;
+		dynamicBtn.disabled = false; // 恢复按钮
+		dynamicBtn.innerText = '开始转换';
+		}, 50); // 延迟 50ms 足够 UI 更新
+    }
+
+    function updateNotePreview(notes) {
+		dynamicBtn.disabled = false; // 恢复按钮
+		dynamicBtn.innerText = '开始转换';
+        const preview = notes.slice(0, 50).map(n => {
+            const name = midiToNoteName(n.midi);
+            return `<span class="note-tag" title="开始:${n.start.toFixed(2)}s 力度:${n.velocity}">${name} (${n.velocity})</span>`;
+        }).join('');
+        noteListDiv.innerHTML = preview || '无音符';
+    }
+
+    function midiToNoteName(midi) {
+        const names = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+        return names[midi % 12] + (Math.floor(midi / 12) - 1);
+    }
+
+    dynamicBtn.addEventListener('click', analyzeDynamic);
+
+    downloadBtn.addEventListener('click', () => {
+		setProgress(100, '保存MIDI文件...');
+        if (currentNotes.length === 0) { infoDiv.innerHTML = '没有音符数据'; return; }
+		let blob;
+		if (midiModeSelect.value === 'overlap') {
+			blob = overlapCreateMidiBlob(currentNotes, audioBuffer ? audioBuffer.duration : 2);
+		} else if (midiModeSelect.value === 'traditional') {
+			blob = traditionalCreateMidiBlob(currentNotes, audioBuffer ? audioBuffer.duration : 2);
+		} else {
+			blob = speedcreateMidiBlob(currentNotes, audioBuffer ? audioBuffer.duration : 2);
+		}
+		const modeSuffix = midiModeSelect.value === 'overlap' ? '-OVE' : (midiModeSelect.value === 'traditional' ? '-TRA' : '');
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = audioFileName + '-FFT' + modeSuffix + '.mid';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+})();
+</script>
+</body>
+</html>
