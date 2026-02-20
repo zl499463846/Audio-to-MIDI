@@ -23,6 +23,8 @@
 
 如果仅仅只是用于转换MIDI的话，可以直接下载根目录下的index.html(压缩版)
 
+或者<a href="https://zl499463846.github.io/Audio-to-MIDI/">点击这里</a>直接访问index.html
+
 ## 功能
 
 - **实时FFT分析**：基于快速傅里叶变换
