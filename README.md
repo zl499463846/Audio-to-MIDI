@@ -25,6 +25,21 @@
 
 或者<a href="https://zl499463846.github.io/Audio-to-MIDI/">点击这里</a>直接访问index.html
 
+## 转换效果试听
+
+为了让您更直观地感受不同算法的差异，这里用一个CC0协议的音频作为示例，展示了原音频与三种MIDI生成算法转换后通过合成器回放的效果对比。
+
+**测试音频来源**：https://www.aigei.com/item/gu_feng_ji_a_14.html
+
+| 算法类型 | 音频试听 | 简要说明 |
+| :--- | :--- | :--- |
+| **原音频** | <audio src="./testmp3/audio1.mp3" controls style="width: 250px;">您的浏览器不支持 audio 元素。</audio> | 原始音频文件，供对比参考 |
+| **高音质算法** | <audio src="./testmp3/audio2.mp3" controls style="width: 250px;">您的浏览器不支持 audio 元素。</audio> | 音质还原度高，文件较大，对播放器要求高 |
+| **平衡修复算法** | <audio src="./testmp3/audio3.mp3" controls style="width: 250px;">您的浏览器不支持 audio 元素。</audio> | 在音质和兼容性之间取得平衡 |
+| **传统处理算法** | <audio src="./testmp3/audio4.mp3" controls style="width: 250px;">您的浏览器不支持 audio 元素。</audio> | 文件小，通用性高，类似于普通转换网站的效果 |
+
+> **请注意**：您听到的音频并非直接输出的MIDI文件，而是将生成的MIDI文件通过通用MIDI播放器回放并录制的结果，以便您直接聆听算法对音频信息的提取效果。
+
 ## 功能
 
 - **实时FFT分析**：基于快速傅里叶变换
@@ -79,5 +94,5 @@ MIT License - 可随意商用，无需署名
 ---
 
 <div align="center">
-   如果这个项目对你有帮助，欢迎Star！ 
+   如果这个项目对您有帮助，欢迎Star！ 
 </div>
