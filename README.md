@@ -31,16 +31,74 @@
 
 **测试音频来源**：https://www.aigei.com/item/gu_feng_ji_a_14.html
 
-原音频
+<table>
+<tr>
+<td align="center">
+
+**原音频**
+
+</td>
+<td align="center">
+
+**高音质算法**
+
+</td>
+<td align="center">
+
+**平衡修复算法**
+
+</td>
+<td align="center">
+
+**传统处理算法**
+
+</td>
+</tr>
+<tr>
+<td align="center">
+
+原始音频文件，用于对照
+
+</td>
+<td align="center">
+
+音质还原度高，文件较大，对播放器要求高
+
+</td>
+<td align="center">
+
+在音质和兼容性之间取得平衡
+
+</td>
+<td align="center">
+
+文件小，通用性高，类似于普通转换网站的效果
+
+</td>
+</tr>
+<tr>
+<td align="center">
 
 <https://github.com/user-attachments/assets/73b0d2f3-d8a9-4cb7-b1f6-41c45d4a81df>
-[audio1.mp3](https://github.com/user-attachments/files/25443126/audio1.mp3)
 
-| 算法类型 | 音频试听 | 简要说明 |
-| :--- | :--- | :--- |
-| **高音质算法** | [高音质算法](https://github.com/user-attachments/assets/55f3c3de-241c-401f-ad09-1cd7a2eba1cd) | 音质还原度高，文件较大，对播放器要求高 |
-| **平衡修复算法** | [平衡修复算法](https://github.com/user-attachments/assets/9a1e22ab-9f65-4e70-8488-aba250a8c0ca) | 在音质和兼容性之间取得平衡 |
-| **传统处理算法** | [传统处理算法](https://github.com/user-attachments/assets/b5f1ce5e-bc82-4177-853b-d3fc2a604ecf) | 文件小，通用性高，类似于普通转换网站的效果 |
+</td>
+<td align="center">
+
+<https://github.com/user-attachments/assets/55f3c3de-241c-401f-ad09-1cd7a2eba1cd>
+
+</td>
+<td align="center">
+
+<https://github.com/user-attachments/assets/9a1e22ab-9f65-4e70-8488-aba250a8c0ca>
+
+</td>
+<td align="center">
+
+<https://github.com/user-attachments/assets/b5f1ce5e-bc82-4177-853b-d3fc2a604ecf>
+
+</td>
+</tr>
+</table>
 
 > **请注意**：您听到的音频并非直接输出的MIDI文件，而是将生成的MIDI文件通过通用MIDI播放器回放并录制的结果，以便您直接聆听算法对音频信息的提取效果。
 
