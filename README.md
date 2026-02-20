@@ -34,6 +34,7 @@
 原音频
 
 <https://github.com/user-attachments/assets/73b0d2f3-d8a9-4cb7-b1f6-41c45d4a81df>
+[audio1.mp3](https://github.com/user-attachments/files/25443126/audio1.mp3)
 
 | 算法类型 | 音频试听 | 简要说明 |
 | :--- | :--- | :--- |
