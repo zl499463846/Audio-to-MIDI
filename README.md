@@ -33,10 +33,10 @@
 
 | 算法类型 | 音频试听 | 简要说明 |
 | :--- | :--- | :--- |
-| **原音频** | [原音频](https://github.com/zl499463846/Audio-to-MIDI/raw/main/testmp3/audio1.mp3) | 原始音频文件，供对比参考 |
-| **高音质算法** | [高音质算法](https://github.com/zl499463846/Audio-to-MIDI/raw/main/testmp3/audio2.mp3) | 音质还原度高，文件较大，对播放器要求高 |
-| **平衡修复算法** | [平衡修复算法](https://github.com/zl499463846/Audio-to-MIDI/raw/main/testmp3/audio3.mp3) | 在音质和兼容性之间取得平衡 |
-| **传统处理算法** | [传统处理算法](https://github.com/zl499463846/Audio-to-MIDI/raw/main/testmp3/audio4.mp3) | 文件小，通用性高，类似于普通转换网站的效果 |
+| **原音频** | ![原音频](https://github.com/zl499463846/Audio-to-MIDI/raw/main/testmp3/audio1.mp3)  | 原始音频文件，供对比参考 |
+| **高音质算法** | ![高音质算法](https://github.com/zl499463846/Audio-to-MIDI/raw/main/testmp3/audio2.mp3) | 音质还原度高，文件较大，对播放器要求高 |
+| **平衡修复算法** | ![平衡修复算法](https://github.com/zl499463846/Audio-to-MIDI/raw/main/testmp3/audio3.mp3) | 在音质和兼容性之间取得平衡 |
+| **传统处理算法** | ![传统处理算法](https://github.com/zl499463846/Audio-to-MIDI/raw/main/testmp3/audio4.mp3) | 文件小，通用性高，类似于普通转换网站的效果 |
 
 > **请注意**：您听到的音频并非直接输出的MIDI文件，而是将生成的MIDI文件通过通用MIDI播放器回放并录制的结果，以便您直接聆听算法对音频信息的提取效果。
 
