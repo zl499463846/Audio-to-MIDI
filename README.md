@@ -85,7 +85,7 @@
 </td>
 <td align="center">
 
-<https://github.com/user-attachments/assets/55f3c3de-241c-401f-ad09-1cd7a2eba1cd>
+<https://github.com/user-attachments/assets/f8141264-6186-4b49-943d-131288ef5028>
 
 </td>
 <td align="center">
@@ -148,16 +148,16 @@
 ## 常见问题
 
 **Q: 转换后的MIDI听起来不像原音频？**
-A: MIDI只包含音符信息，不包含音色。您需要在播放器中为MIDI分配合适的音色才能还原原声
+- A: MIDI只包含音符信息，不包含音色。您需要在播放器中为MIDI分配合适的音色才能还原原声
 
 **Q: 为什么转换速度很慢？**
-A: FFT算法计算量大，处理长音频或高精度设置时需要更多时间，这是正常现象
+- A: FFT算法计算量大，处理长音频或高精度设置时需要更多时间，这是正常现象
 
 **Q: 支持哪些音频格式？**
-A: 浏览器支持的格式：MP3、WAV、OGG、M4A、FLAC、WMA、WEBM、WEBA、AU、AIFF、OPUS、OGA、MKA等
+- A: 浏览器支持的格式：MP3、WAV、OGG、M4A、FLAC、WMA、WEBM、WEBA、AU、AIFF、OPUS、OGA、MKA等
 
 **Q: 可以批量转换吗？**
-A: 不能，当前支持单个文件转换，批量转换功能正在开发中
+- A: 不能，当前支持单个文件转换，批量转换功能正在开发中
 
 ## 参与贡献
 
