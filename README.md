@@ -80,7 +80,7 @@
 <tr>
 <td align="center">
 
-<https://github.com/user-attachments/assets/73b0d2f3-d8a9-4cb7-b1f6-41c45d4a81df>
+<https://github.com/user-attachments/assets/3a6ec283-6907-4e13-902c-68e90204376a>
 
 </td>
 <td align="center">
@@ -102,7 +102,7 @@
 <tr>
 <td align="center">
 
-<https://github.com/user-attachments/assets/a56d0a3c-5a0e-4446-8f64-3c22b2e2bfae>
+<https://github.com/user-attachments/assets/2002326f-ae5e-4800-ae96-4d84c25f0bb1>
 
 </td>
 <td align="center">
