@@ -3,7 +3,7 @@
 <div align="center">
   <img src="https://img.shields.io/badge/version-26.19.16-blue.svg" alt="Version 26.19.16">
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License MIT">
-  <img src="https://img.shields.io/badge/MIDI" alt="MIDI">
+  <img src="https://img.shields.io/badge/Audio-MIDI-blue" alt="Audio to MIDI">
 </div>
 
 ## 项目简介
