@@ -1,8 +1,9 @@
 # 音频转MIDI转换器 / Audio to MIDI Converter
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-26.2.19-blue.svg" alt="Version 1.0.0">
+  <img src="https://img.shields.io/badge/version-26.19.16-blue.svg" alt="Version 26.19.16">
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License MIT">
+  <img src="https://img.shields.io/badge/MIDI" alt="MIDI">
 </div>
 
 ## 项目简介
