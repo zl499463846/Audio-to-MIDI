@@ -28,7 +28,7 @@
 
 ## 转换效果试听
 
-为了让您更直观地感受不同算法的差异，这里用一个CC0协议的音频作为示例，展示了原音频与默认参数下三种MIDI生成算法转换后通过MIDI播放器用正弦波音色回放的效果对比。
+为了让您更直观地感受不同算法的差异，这里用两个CC0协议的音频作为示例，展示了原音频与默认参数下三种MIDI生成算法转换后通过MIDI播放器用正弦波音色回放的效果对比。
 
 **测试音频来源**：https://www.aigei.com/item/gu_feng_ji_a_14.html 和 https://www.aigei.com/item/xian_dai_yan_qi_1291.html
 
@@ -85,17 +85,17 @@
 </td>
 <td align="center">
 
-<https://github.com/user-attachments/assets/f8141264-6186-4b49-943d-131288ef5028>
+<https://github.com/user-attachments/assets/2cf17a08-35dc-440b-9968-c988128b6669>
 
 </td>
 <td align="center">
 
-<https://github.com/user-attachments/assets/9a1e22ab-9f65-4e70-8488-aba250a8c0ca>
+<https://github.com/user-attachments/assets/269a62c9-62ab-4a91-abe0-4e50b2edff9d>
 
 </td>
 <td align="center">
 
-<https://github.com/user-attachments/assets/b5f1ce5e-bc82-4177-853b-d3fc2a604ecf>
+<https://github.com/user-attachments/assets/2c5f5276-5ab8-4dc1-a348-524692735630>
 
 </td>
 </tr>
